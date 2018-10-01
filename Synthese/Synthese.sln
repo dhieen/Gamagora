@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PPMImage", "PPMImage\PPMImage.csproj", "{3B3E82BB-9D37-4F81-921E-5915E57B6B86}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Intersection", "ConsoleApp1\Intersection.csproj", "{52169D25-AECB-4188-BE3A-049AE009C1B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3DScene", "3DScene\3DScene.csproj", "{674ED736-7D1B-408A-92E2-90C2C091321C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B3E82BB-9D37-4F81-921E-5915E57B6B86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B3E82BB-9D37-4F81-921E-5915E57B6B86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B3E82BB-9D37-4F81-921E-5915E57B6B86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B3E82BB-9D37-4F81-921E-5915E57B6B86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52169D25-AECB-4188-BE3A-049AE009C1B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52169D25-AECB-4188-BE3A-049AE009C1B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52169D25-AECB-4188-BE3A-049AE009C1B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52169D25-AECB-4188-BE3A-049AE009C1B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{674ED736-7D1B-408A-92E2-90C2C091321C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{674ED736-7D1B-408A-92E2-90C2C091321C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{674ED736-7D1B-408A-92E2-90C2C091321C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{674ED736-7D1B-408A-92E2-90C2C091321C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FD1D05B2-E6EF-40CD-9791-C227BCCFD401}
+	EndGlobalSection
+EndGlobal
