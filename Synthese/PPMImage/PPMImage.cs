@@ -63,6 +63,12 @@ namespace TPSynthese
             return content.ToArray();
         }
 
+        public void Clear (Color clearColor)
+        {
+            for (int i = 0; i < pxmap.Count; i++)
+                pxmap[i] = clearColor;
+        }
+
         public void SaveFile(string path)
         {
             File.WriteAllLines(path, this.ToStrings());

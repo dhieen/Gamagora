@@ -14,38 +14,72 @@ namespace TPSynthese
         public float size;
         public Color backgroundColor;
         public Color ambiantLight;
+        public float perspective;
+        public float dark;
+        public float bright;
+        public int maxReflectionIterations = 3;
 
-        private float lightSmoothCorrector = 0.5f;
+        private float lightSmoothCorrector = 0.01f;
 
         public void PrintScene (List<Sphere> scene)
         {
+            screen.Clear(backgroundColor);
+
             for (int i =  0; i < screen.pxmap.Count; i++)
             {
+                int reflexionIterations = 0;
                 bool rayHit = false;
                 Sphere rayHitSphere = null;
                 Vector3 rayHitPoint = new Vector3();
+                Vector3 rayDirection = new Vector3();
 
-                ThrowRayFromPx(screen.PXIndex2Coordinates(i), scene, out rayHit, out rayHitPoint, out rayHitSphere);
+                ThrowRayFromPx(screen.PXIndex2Coordinates(i), scene, out rayHit, out rayHitPoint, out rayHitSphere, out rayDirection);
+                
+                while (rayHit && rayHitSphere.reflection > 0f && reflexionIterations++ < maxReflectionIterations)
+                {
+                    Vector3 normal = rayHitSphere.NormalOn(rayHitPoint);
+                    rayDirection = 2 * Vector3.Dot(-rayDirection, normal) * normal + rayDirection;
+                    ThrowRayFromWorldPos(rayHitPoint, rayDirection, scene, out rayHit, out rayHitPoint, out rayHitSphere);
+                }
 
                 if (rayHit)
                 {
-                    screen.pxmap[i] = GetFragment(rayHitSphere, rayHitPoint, scene);
-                }
-                else
-                {
-                    screen.pxmap[i] = backgroundColor;
+                    Vector3 illu = GetIllumination(rayHitSphere, rayHitPoint, scene);
+                    illu -= dark * Vector3.One;
+                    illu /= (bright - dark);
+                    screen.pxmap[i] = ColorXv3(rayHitSphere.color, ClampLightIntensity (illu));
                 }
             }
         }
 
-        private void ThrowRayFromPx (Vector2 pxCoordinates, List<Sphere> objects, out bool hit, out Vector3 hitPoint, out Sphere hitObject)
+        private void ThrowRayFromPx (Vector2 pxCoordinates, List<Sphere> objects, out bool hit, out Vector3 hitPoint, out Sphere hitObject, out Vector3 rayDirection)
+        {
+            Vector3 rayStart;
+
+            if (perspective == 0f)
+            {
+                rayStart = position + Scr2WorldPos(pxCoordinates);
+                rayDirection = new Vector3(0f, 0f, 1f);
+            }
+            else
+            {
+                rayStart = position + new Vector3(0f, 0f, -1f) / perspective;
+                rayDirection = Vector3.Normalize(Scr2WorldPos(pxCoordinates) - rayStart);
+            }
+
+            ThrowRayFromWorldPos(rayStart, rayDirection, objects, out hit, out hitPoint, out hitObject);
+        }
+
+        private void ThrowRayFromWorldPos (Vector3 rayStart, Vector3 rayDirection, List<Sphere> objects, out bool hit, out Vector3 hitPoint, out Sphere hitObject)
         {
             hit = false;
             hitPoint = Vector3.Zero;
             hitObject = null;
+            
+            RayTracer.Ray ray;
+                        
+            ray = new RayTracer.Ray(rayStart, rayDirection);
 
-            Vector3 rayStart = position + Scr2WorldPos(pxCoordinates);
-            RayTracer.Ray ray = new RayTracer.Ray(rayStart, new Vector3(0f, 0f, 1f));
             float distance = float.MaxValue;
 
             foreach (Sphere sph in objects)
@@ -67,18 +101,16 @@ namespace TPSynthese
             }
         }
 
-        private Color GetFragment (Sphere sceneObject, Vector3 worldPoint, List<Sphere> sceneObjects)
+        private Vector3 GetIllumination (Sphere sceneObject, Vector3 worldPoint, List<Sphere> sceneObjects)
         {
-            Color fragment = new Color();
+            Vector3 illumination = Vector3.Zero;
 
             if (sceneObject.lightSource > 0f)
             {
-                fragment = sceneObject.color;
+                illumination = Vector3.One;
             }
-            else
+            else if (sceneObject.reflection == 0f)
             {
-                Color lightIntensity = ambiantLight;
-
                 foreach (Sphere lightSource in sceneObjects.FindAll(s => s.lightSource > 0f))
                 {
                     float lightDistance = Vector3.Distance(lightSource.center, worldPoint);
@@ -104,24 +136,18 @@ namespace TPSynthese
 
                     if (isInLight)
                     {
-                        float cosTheta = Vector3.Dot(Vector3.Normalize(worldPoint - sceneObject.center), Vector3.Normalize(lightSource.center - worldPoint)) / MathF.PI;
+                        float cosTheta = Vector3.Dot(sceneObject.NormalOn (worldPoint), Vector3.Normalize(lightSource.center - worldPoint)) / MathF.PI;
 
-                        int rIntensity = lightIntensity.R + (int)(lightSource.lightSource * lightSource.color.R * MathF.Max(cosTheta, 0f) / MathF.Pow(lightDistance, 2f));
-                        int gIntensity = lightIntensity.G + (int)(lightSource.lightSource * lightSource.color.G * MathF.Max(cosTheta, 0f) / MathF.Pow(lightDistance, 2f));
-                        int bIntensity = lightIntensity.B + (int)(lightSource.lightSource * lightSource.color.B * MathF.Max(cosTheta, 0f) / MathF.Pow(lightDistance, 2f));
+                        float rIntensity = (lightSource.lightSource * lightSource.color.R * MathF.Max(cosTheta, 0f) / MathF.Pow(lightDistance, 2f)) / 255f;
+                        float gIntensity = (lightSource.lightSource * lightSource.color.G * MathF.Max(cosTheta, 0f) / MathF.Pow(lightDistance, 2f)) / 255f;
+                        float bIntensity = (lightSource.lightSource * lightSource.color.B * MathF.Max(cosTheta, 0f) / MathF.Pow(lightDistance, 2f)) / 255f;
 
-                        lightIntensity = Color.FromArgb((int)MathF.Min(255, rIntensity), (int)MathF.Min(255, gIntensity), (int)MathF.Min(255, bIntensity));
+                        illumination += new Vector3 (rIntensity, gIntensity,bIntensity);
                     }
                 }
-
-                float red = sceneObject.color.R * ((float)lightIntensity.R / 255f);
-                float green = sceneObject.color.G * ((float)lightIntensity.G / 255f);
-                float blue = sceneObject.color.B * ((float)lightIntensity.B / 255f);
-
-                fragment = Color.FromArgb((int)red, (int)green, (int)blue);
             }
 
-            return fragment;
+            return illumination;
         }
 
         public Vector3 Scr2WorldPos (Vector2 scrPos)
@@ -130,6 +156,26 @@ namespace TPSynthese
             Vector3 worldPos = size * new Vector3(centered.X, - centered.Y, 0f);
 
             return worldPos;
+        }
+
+        private Color GammaCorrection ( Color c)
+        {
+            return Color.FromArgb((int)MathF.Pow(c.R, 2.2f), (int)MathF.Pow(c.G, 2.2f), (int)MathF.Pow(c.B, 2.2f));
+        }
+
+        private Color ColorXv3 (Color c, Vector3 v)
+        {
+            return Color.FromArgb((int)((float)c.R * v.X), (int)((float)c.G * v.Y), (int)((float)c.B * v.Z));
+        }
+
+        private Vector3 ClampLightIntensity (Vector3 intensity)
+        {
+            return new Vector3(ClampLightIntensity(intensity.X), ClampLightIntensity(intensity.Y), ClampLightIntensity(intensity.Z));
+        }
+
+        private float ClampLightIntensity(float f)
+        {
+            return MathF.Max(MathF.Min(f, 1f), 0f);
         }
     }
 }
