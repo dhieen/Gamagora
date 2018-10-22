@@ -1,5 +1,8 @@
 #pragma once
 #include <cmath>
+#include <string>
+#include <sstream>
+
 class Vector3Double
 {
 public:
@@ -17,6 +20,8 @@ public:
 	Vector3Double operator-(const Vector3Double& other) { return Vector3Double(X - other.X, Y - other.Y, Z - other.Z); }
 	Vector3Double operator*(const double& a) { return Vector3Double(X *a, Y *a, Z *a); }
 	Vector3Double operator/(const double& a) { return Vector3Double(X /a, Y /a, Z /a); }
+	void operator+=(const Vector3Double& other) { X += other.X; Y += other.Y; Z += other.Z; }
+	void operator-=(const Vector3Double& other) { X -= other.X; Y -= other.Y; Z -= other.Z; }
 
 public:
 	double DistanceSquared(Vector3Double a, Vector3Double b) {
