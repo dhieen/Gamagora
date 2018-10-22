@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Numerics;
 using System.Drawing;
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Input;
+//using OpenTK;
+//using OpenTK.Graphics;
+//using OpenTK.Graphics.OpenGL;
+//using OpenTK.Input;
 
 namespace Intersection
 {
+    /*
     class MyApplication
-    {        
+    {    
+        
         [STAThread]
         public static void Main()
         {
@@ -62,31 +64,17 @@ namespace Intersection
             }
         }
     }
-
-    /*
+    */
+    
     class Program
     {
         static void Main(string[] args)
         {
-            RayTracer.Ray ray = new RayTracer.Ray(Vector3.Zero, Vector3.UnitX);
-            Vector3 intersection = new Vector3();
-            int isIntersection = ray.FindSphereIntersection(10f * Vector3.UnitX, 5f, out intersection);
-
-            switch (isIntersection)
-            {
-                case -1:
-                    Console.WriteLine("Ray Error");
-                    break;
-                case 0:
-                    Console.WriteLine("No intersection");
-                    break;
-                case 1:
-                    Console.WriteLine("Intersection: " + intersection.ToString());
-                    break;
-            }
+            Vector3Double v = new Vector3Double(1, 0, 0);
+            Console.WriteLine("vector " + v.ToString());
+            Console.WriteLine("rotated: " + v.Rotated(new Vector3Double(0, 1, 0), Math.PI/4).ToString());
 
             Console.ReadKey();
         }
     }
-    */
 }

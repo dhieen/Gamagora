@@ -11,25 +11,30 @@ namespace TPSynthese
         static void Main(string[] args)
         {
             List<Sphere> spheres = new List<Sphere>();
-            spheres.Add(new Sphere(.5f, new Vector3(5f, 15f, -10f), Color.Yellow, 1000f));
-            spheres.Add(new Sphere(.5f, new Vector3(-5f, 15f, -10f), Color.OrangeRed, 1000f));
-            spheres.Add(new Sphere(.5f, new Vector3(0f, 25f, -10f), Color.DeepSkyBlue, 1000f));
-            spheres.Add(new Sphere(1f, new Vector3(0f, 5f, -10f), Color.ForestGreen, 0f));
-            spheres.Add(new Sphere(5f, new Vector3(3f, -5f, -8f), Color.Tomato, 0f));
-            spheres.Add(new Sphere(10f, new Vector3(-15f, 0f, 0f), Color.Purple, 0f, 1f));
-            spheres.Add(new Sphere(20f, new Vector3(0f, -25f, 0f), Color.Beige, 0f));
-            spheres.Add(new Sphere(50f, new Vector3(50f, 0f, 20f), Color.DodgerBlue, 0f, 1f));
-            spheres.Add(new Sphere(120f, new Vector3(-100f, 0f, 120f), Color.BurlyWood, 0f));
+            spheres.Add(new Sphere(.2, new Vector3Double(0, 0, 0), Color.White, 40f));
+            spheres.Add(new Sphere(.2, new Vector3Double(4, 2, 0), Color.Yellow, 20f));
+            spheres.Add(new Sphere(.2, new Vector3Double(-4, -2, 0), Color.Blue, 20f));
+                        
+            spheres.Add(new Sphere(1e3, new Vector3Double(1e3 + 8, 0, 0), Color.Tomato));
+            spheres.Add(new Sphere(1e3, new Vector3Double(-1e3 - 8, 0, 0), Color.Thistle));
+            spheres.Add(new Sphere(1e3, new Vector3Double(0, 1e3 + 5, 0), Color.Yellow));
+            spheres.Add(new Sphere(1e3, new Vector3Double(0, -1e3 - 5, 0), Color.SkyBlue));
+            spheres.Add(new Sphere(1e3, new Vector3Double(0, 0, 1e3 + 5), Color.Firebrick));
+            spheres.Add(new Sphere(1e3, new Vector3Double(0, 0, -1e3 - 5), Color.White, 0f, 1f));
+
+            spheres.Add(new Sphere(2, new Vector3Double(4, -2, 3), Color.CadetBlue, 0f, 1f));
+            spheres.Add(new Sphere(2, new Vector3Double(-4, 2, -3), Color.CadetBlue));
+            spheres.Add(new Sphere(1, new Vector3Double(-2, -4, 1), Color.BurlyWood, 0f, 1f));
 
             Camera camera = new Camera();
-            camera.position = new Vector3(0f, 0f, -5f);
-            camera.size = .1f;
-            camera.perspective = .02f;
-            camera.screen = new PPMImage(800, 800);
-            camera.ambiantLight = Color.FromArgb(0, 0, 0) ;
-            camera.backgroundColor = Color.DarkGray;
-            camera.bright = .4f;
-            camera.dark = 0f;
+            camera.position = new Vector3Double(-3, 0, -10);
+            camera.size = 1;
+            camera.perspective = 0.002;
+            camera.screen = new PPMImage(800, 600);
+            camera.ambiantLight = Color.FromArgb(50, 50, 50) ;
+            camera.backgroundColor = Color.Green;
+            camera.bright = .8f;
+            camera.dark = .0f;
 
             camera.PrintScene(spheres);
 
