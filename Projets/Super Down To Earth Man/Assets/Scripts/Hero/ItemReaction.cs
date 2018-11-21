@@ -6,10 +6,11 @@ using UnityEngine.Events;
 public class ItemReaction : MonoBehaviour
 {
     public class GetPointsEvent : UnityEvent<int,int> { }
-    public class GetHurtEvent : UnityEvent<Vector3> { }
+    public class GetHurtEvent : UnityEvent<Vector3,int> { }
 
     public int health;
     public int score;
+    public ParticleSystem coinParticles;
 
     public GetPointsEvent getsPoints;
     public GetHurtEvent getsHurt;
@@ -28,9 +29,17 @@ public class ItemReaction : MonoBehaviour
         getsPoints.Invoke(points, score);
     }
 
-    public void GetHurt (Vector3 hurtSource)
+    public void GetHurt (Vector3 hurtSource, int damage)
     {
+        int losePoint = Mathf.Min(damage, score);
+        score -= losePoint;
         health -= 1;
-        getsHurt.Invoke(hurtSource);
+
+        var emission = coinParticles.emission;
+        emission.rateOverTime = losePoint * 1f / coinParticles.main.duration;
+        coinParticles.Play();
+
+        getsHurt.Invoke(hurtSource, losePoint);
+        getsPoints.Invoke (-losePoint, score);
     }
 }

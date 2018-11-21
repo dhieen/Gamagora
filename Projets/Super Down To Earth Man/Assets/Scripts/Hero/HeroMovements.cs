@@ -31,11 +31,11 @@ public class HeroMovements : MonoBehaviour
     private Rigidbody2D rb;
     private ItemReaction itemReact;
 
-    private bool isOnGround;
-    private bool isJumping;
-    private bool isFalling;
+    public bool IsOnGround { get; private set; }
+    public bool IsJumping { get; private set; }
+    public bool IsFalling { get; private set; }
 
-    private UnityAction<Vector3> actionOnHurt;
+    private UnityAction<Vector3,int> actionOnHurt;
 
     void Start()
     {
@@ -45,7 +45,7 @@ public class HeroMovements : MonoBehaviour
     private IEnumerator Init()
     {
         rb = GetComponent<Rigidbody2D>();
-        actionOnHurt = new UnityAction<Vector3>(HurtJump);
+        actionOnHurt = new UnityAction<Vector3,int>(HurtJump);
 
         itemReact = GetComponentInChildren<ItemReaction>();
         yield return new WaitUntil(() => itemReact.Initialized);
@@ -54,7 +54,7 @@ public class HeroMovements : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
-        if (isFalling) return;
+        if (IsFalling) return;
 
         Collider2D other = collision.collider;
 
@@ -68,7 +68,7 @@ public class HeroMovements : MonoBehaviour
 
                 if (groundAngle < toleranceAngle)
                 {
-                    isFalling = false;
+                    IsFalling = false;
                     rb.constraints = RigidbodyConstraints2D.FreezeRotation;
                     rb.angularDrag = controlledAngularDrag;
                     transform.rotation = Quaternion.LookRotation(Vector3.forward, contact.normal);
@@ -84,33 +84,33 @@ public class HeroMovements : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isFalling) return;
+        if (IsFalling) return;
 
-        isOnGround = feet.IsColliding;
+        IsOnGround = feet.IsColliding;
         Vector2 localVelocity = Quaternion.Inverse(transform.rotation) * rb.velocity;
 
-        if (isOnGround)
+        if (IsOnGround)
         {
             localVelocity = new Vector2(speed, localVelocity.y);
 
             if (controlDirection == 0f)
-                isJumping = false;
+                IsJumping = false;
             else
             {
-                if (!isJumping)
+                if (!IsJumping)
                 {
                     localVelocity += jumpSpeed;
-                    isJumping = true;
+                    IsJumping = true;
                 }
             }
             anim.SetBool(jumpParameter, false);
         }
         else
         {
-            isJumping = true;
+            IsJumping = true;
             if (controlDirection != 0f) rb.angularVelocity = torque * controlDirection;
 
-            if (!isFalling) anim.SetBool(jumpParameter, true);
+            if (!IsFalling) anim.SetBool(jumpParameter, true);
         }
 
         rb.velocity = transform.rotation * localVelocity;
@@ -118,7 +118,7 @@ public class HeroMovements : MonoBehaviour
         rb.constraints = RigidbodyConstraints2D.None;
     }
 
-    private void HurtJump(Vector3 hurtSource)
+    private void HurtJump(Vector3 hurtSource, int damage)
     {
         rb.velocity = Quaternion.LookRotation(Vector3.forward, transform.position - hurtSource) * hurtJumpSpeed;        
 
@@ -135,8 +135,8 @@ public class HeroMovements : MonoBehaviour
         rb.constraints = RigidbodyConstraints2D.None;
         rb.AddTorque(fallRoll);
 
-        if (isFalling) yield return null;
-        isFalling = true;        
+        if (IsFalling) yield return null;
+        IsFalling = true;        
 
         float startTime = Time.time;
         while (Time.time < startTime + tumbleDuration)
@@ -145,6 +145,6 @@ public class HeroMovements : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
 
-        isFalling = false;
+        IsFalling = false;
     }
 }

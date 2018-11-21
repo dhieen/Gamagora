@@ -132,9 +132,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc205156668e0d845aee9f05b8aad613, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 65
+  radius: 55
   verticesPerUnit: 3
-  randomRange: 40
+  randomRange: 10
   smoothLevel: 2
 --- !u!120 &120543080947522996
 LineRenderer:
