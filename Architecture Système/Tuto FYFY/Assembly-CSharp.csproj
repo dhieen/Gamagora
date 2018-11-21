@@ -285,6 +285,9 @@
  <Reference Include="FYFY_Inspector">
  <HintPath>C:/Users/anthenry/source/repos/Architecture Système/Tuto FYFY/Assets/Libraries/FYFY_Inspector.dll</HintPath>
  </Reference>
+ <Reference Include="PointerManager">
+ <HintPath>C:/Users/anthenry/source/repos/Architecture Système/Tuto FYFY/Assets/Libraries/PointerManager.dll</HintPath>
+ </Reference>
  <Reference Include="TriggerManager">
  <HintPath>C:/Users/anthenry/source/repos/Architecture Système/Tuto FYFY/Assets/Libraries/TriggerManager.dll</HintPath>
  </Reference>
@@ -293,9 +296,6 @@
  </Reference>
  <Reference Include="UnityEngine.StandardEvents">
  <HintPath>C:/Users/anthenry/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll</HintPath>
- </Reference>
- <Reference Include="PointerManager">
- <HintPath>C:/Users/anthenry/source/repos/Architecture Système/Tuto FYFY/Assets/Libraries/PointerManager.dll</HintPath>
  </Reference>
  <Reference Include="mscorlib">
  <HintPath>C:/Program Files/Unity/Editor/Data/MonoBleedingEdge/lib/mono/unity/mscorlib.dll</HintPath>

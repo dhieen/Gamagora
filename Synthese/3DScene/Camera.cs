@@ -22,7 +22,7 @@ namespace TPSynthese
 
         private double lightSmoothCorrector = .2;
 
-        public void PrintScene (List<Sphere> scene)
+        public void PrintScene (List<iSceneObject> scene, List<Box> boxes = null)
         {
             screen.Clear(backgroundColor);
 
@@ -30,30 +30,30 @@ namespace TPSynthese
             {
                 int reflexionIterations = 0;
                 bool rayHit = false;
-                Sphere rayHitSphere = null;
+                iSceneObject rayHitObject = null;
                 Vector3Double rayHitPoint = new Vector3Double();
                 Vector3Double rayDirection = new Vector3Double();
 
-                ThrowRayFromPx(screen.PXIndex2Coordinates(i), scene, out rayHit, out rayHitPoint, out rayHitSphere, out rayDirection);
+                ThrowRayFromPx(screen.PXIndex2Coordinates(i), scene, out rayHit, out rayHitPoint, out rayHitObject, out rayDirection);
                 
-                while (rayHit && rayHitSphere.reflection > 0f && reflexionIterations++ < maxReflectionIterations)
+                while (rayHit && rayHitObject.Reflection > 0f && reflexionIterations++ < maxReflectionIterations)
                 {
-                    Vector3Double normal = rayHitSphere.NormalOn(rayHitPoint);
+                    Vector3Double normal = rayHitObject.NormalOn(rayHitPoint);
                     rayDirection = 2 * Vector3Double.Dot(-rayDirection, normal) * normal + rayDirection;
-                    ThrowRayFromWorldPos(rayHitPoint + normal * lightSmoothCorrector, rayDirection, scene, out rayHit, out rayHitPoint, out rayHitSphere);
+                    ThrowRayFromWorldPos(rayHitPoint + normal * lightSmoothCorrector, rayDirection, scene, out rayHit, out rayHitPoint, out rayHitObject);
                 }
 
                 if (rayHit)
                 {
-                    Vector3 illu = GetIllumination(rayHitSphere, rayHitPoint, scene);
+                    Vector3 illu = GetDirectIllumination(rayHitObject, rayHitPoint, scene);
                     illu -= dark * Vector3.One;
                     illu /= (bright - dark);
-                    screen.pxmap[i] = ColorXv3(rayHitSphere.color, ClampLightIntensity (illu));
+                    screen.pxmap[i] = ColorXv3(rayHitObject.Color, ClampLightIntensity (illu));
                 }
             }
         }
 
-        private void ThrowRayFromPx (Vector2 pxCoordinates, List<Sphere> objects, out bool hit, out Vector3Double hitPoint, out Sphere hitObject, out Vector3Double rayDirection)
+        private void ThrowRayFromPx (Vector2 pxCoordinates, List<iSceneObject> objects, out bool hit, out Vector3Double hitPoint, out iSceneObject hitObject, out Vector3Double rayDirection)
         {
             Vector3Double rayStart;
 
@@ -71,7 +71,7 @@ namespace TPSynthese
             ThrowRayFromWorldPos(rayStart, rayDirection, objects, out hit, out hitPoint, out hitObject);
         }
 
-        private void ThrowRayFromWorldPos (Vector3Double rayStart, Vector3Double rayDirection, List<Sphere> objects, out bool hit, out Vector3Double hitPoint, out Sphere hitObject)
+        private void ThrowRayFromWorldPos (Vector3Double rayStart, Vector3Double rayDirection, List<iSceneObject> objects, out bool hit, out Vector3Double hitPoint, out iSceneObject hitObject)
         {
             hit = false;
             hitPoint = Vector3Double.Zero;
@@ -83,17 +83,17 @@ namespace TPSynthese
 
             double distance = double.MaxValue;
 
-            foreach (Sphere sph in objects)
+            foreach (iSceneObject o in objects)
             {
                 Vector3Double newHitPoint = new Vector3Double();
-                bool newRayHit = ray.FindSphereIntersection(sph.center, sph.radius, out newHitPoint);
+                bool newRayHit = o.FindRayIntersection (ray, out newHitPoint);
 
                 if (newRayHit)
                 {
                     if (!hit)
                     {
                         hit = true;
-                        hitObject = sph;
+                        hitObject = o;
                         hitPoint = newHitPoint;
                         distance = Vector3Double.Distance(rayStart, newHitPoint);
                     }
@@ -102,35 +102,35 @@ namespace TPSynthese
                         double newDistance = Vector3Double.Distance(rayStart, newHitPoint);
                         if (newDistance < distance)
                         {
-                            hitObject = sph;
+                            hitObject = o;
                             hitPoint = newHitPoint;
                             distance = newDistance;
                         }
                     }
                 }
-            }
+            }            
         }
 
-        private Vector3 GetDirectIllumination (Sphere sceneObject, Vector3Double worldPoint, List<Sphere> sceneObjects)
+        private Vector3 GetDirectIllumination (iSceneObject sceneObject, Vector3Double worldPoint, List<iSceneObject> sceneObjects)
         {
             Vector3 illumination = Vector3.Zero;
             double lightDistance = 0;
 
-            if (sceneObject.lightSource > 0f)
+            if (sceneObject.LightSource > 0f)
             {
                 illumination = Vector3.One;
             }
-            else if (sceneObject.reflection == 0f)
+            else if (sceneObject.Reflection == 0f)
             {
-                foreach (Sphere lightSource in sceneObjects.FindAll(s => s.lightSource > 0f))
+                foreach (iSceneObject lightSource in sceneObjects.FindAll(s => s.LightSource > 0f))
                 {
-                    if (IsPointInLight (worldPoint, lightSource, sceneObjects, out lightDistance))
+                    if (IsPointInLight (worldPoint, lightSource, sceneObjects, out lightDistance) && sceneObject.NormalOn(worldPoint) != null)
                     {
-                        double cosTheta = Vector3Double.Dot(sceneObject.NormalOn (worldPoint), Vector3Double.Normalize(lightSource.center - worldPoint)) / MathF.PI;
+                        double cosTheta = Vector3Double.Dot(sceneObject.NormalOn (worldPoint), Vector3Double.Normalize(lightSource.Center - worldPoint)) / MathF.PI;
 
-                        double rIntensity = (lightSource.lightSource * lightSource.color.R * Math.Max(cosTheta, 0f) / Math.Pow(lightDistance, 2f)) / 255f;
-                        double gIntensity = (lightSource.lightSource * lightSource.color.G * Math.Max(cosTheta, 0f) / Math.Pow(lightDistance, 2f)) / 255f;
-                        double bIntensity = (lightSource.lightSource * lightSource.color.B * Math.Max(cosTheta, 0f) / Math.Pow(lightDistance, 2f)) / 255f;
+                        double rIntensity = (lightSource.LightSource * lightSource.Color.R * Math.Max(cosTheta, 0f) / Math.Pow(lightDistance, 2f)) / 255f;
+                        double gIntensity = (lightSource.LightSource * lightSource.Color.G * Math.Max(cosTheta, 0f) / Math.Pow(lightDistance, 2f)) / 255f;
+                        double bIntensity = (lightSource.LightSource * lightSource.Color.B * Math.Max(cosTheta, 0f) / Math.Pow(lightDistance, 2f)) / 255f;
 
                         illumination += new Vector3 ((float)rIntensity, (float)gIntensity, (float)bIntensity);
                     }
@@ -140,6 +140,7 @@ namespace TPSynthese
             return illumination;
         }
 
+        /*
         private Vector3 GetIndirectIllumination (Sphere sceneObject, Vector3Double worldPoint, List<Sphere> sceneObjects, int rayQuantity)
         {
             Vector3 illumination = Vector3.Zero;
@@ -157,22 +158,23 @@ namespace TPSynthese
 
             return illumination;
         }
+        */
 
-        private bool IsPointInLight (Vector3Double point, Sphere lightSource, List<Sphere> sceneObjects, out double lightDistance)
+        private bool IsPointInLight (Vector3Double point, iSceneObject lightSource, List<iSceneObject> sceneObjects, out double lightDistance)
         {
-            lightDistance = Vector3Double.Distance(lightSource.center, point);
+            lightDistance = Vector3Double.Distance(lightSource.Center, point);
             bool isInLight = true;
             Vector3Double newRayPoint = new Vector3Double();
 
             RayTracer.Ray ray = new RayTracer.Ray();
-            ray.origin = lightSource.center;
-            ray.Direction = point - lightSource.center;
-            foreach (Sphere sph in sceneObjects)
+            ray.origin = lightSource.Center;
+            ray.Direction = point - lightSource.Center;
+            foreach (iSceneObject so in sceneObjects)
             {
-                if (sph.lightSource == 0f)
+                if (so.LightSource == 0f)
                 {
-                    if (ray.FindSphereIntersection(sph.center, sph.radius, out newRayPoint)
-                        && Vector3Double.Distance(lightSource.center, newRayPoint) < lightDistance
+                    if (so.FindRayIntersection(ray, out newRayPoint)
+                        && Vector3Double.Distance(lightSource.Center, newRayPoint) < lightDistance
                         && Vector3Double.Distance(newRayPoint, point) > lightSmoothCorrector)
                     {
                         isInLight = false;
