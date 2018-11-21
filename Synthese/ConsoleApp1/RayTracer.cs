@@ -15,39 +15,13 @@ public class RayTracer
         }
         private Vector3Double _direction;
 
-        private void Normalize()
-        {
-            if (Vector3Double.DistanceSquared(Vector3Double.Zero, _direction) != 1f) _direction = Vector3Double.Normalize(_direction);
-        }
-
         public Ray () { origin = Vector3Double.Zero; _direction = Vector3Double.Zero; }
         public Ray (Vector3Double o, Vector3Double d)
         {
             origin = o;
             _direction = Vector3Double.Normalize(d);
-        }
-
-        public bool FindSphereIntersection (Vector3Double center, double radius, out Vector3Double intersection)
-        {
-            intersection = new Vector3Double();
-            if (_direction == Vector3Double.Zero) return false;
-            Normalize();
-
-            double B = 2 * (Vector3Double.Dot(origin, _direction) - Vector3Double.Dot(center, _direction));
-            double C = Vector3Double.DistanceSquared(center, origin) - Math.Pow(radius, 2);
-            double delta = Math.Pow(B, 2) - 4 * C;
-
-            if (delta < 0f) return false;
-
-            double t = (-B - Math.Sqrt(delta)) / 2;
-            if (t < 0)
-                t = (-B + Math.Sqrt(delta)) / 2;
-            if (t < 0) return false;
-
-            intersection = origin + _direction * t;
-
-            return true;
-        }
+        }     
+               
 
         public void RandomizeDirection (Vector3Double around, double angleRange)
         {
