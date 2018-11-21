@@ -2,24 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RandomPoly
+public class RandomPoly : MonoBehaviour
 {
-    private GameObject polyGO;
-    private float radius;
-    private float verticesPerUnit;
-    private float randomRange;
-
-    public RandomPoly (GameObject poly, float rad, float freq, float angle)
-    {
-        polyGO = poly;
-        radius = rad;
-        verticesPerUnit = freq;
-        randomRange = angle;
-    }
+    public float radius;
+    public float verticesPerUnit;
+    public float randomRange;
+    [Range(0, 5)]
+    public int smoothLevel;
 
 	public void Randomize ()
     {
         List<Vector2> randomPositions = RandomPositions();
+        if (smoothLevel > 0) randomPositions = new List<Vector2>(Smooth(randomPositions.ToArray()));
         SetLine(randomPositions);
         SetMesh(randomPositions);
         SetCollider(randomPositions);
@@ -27,7 +21,7 @@ public class RandomPoly
 
     private void SetLine (List<Vector2> positions)
     {
-        LineRenderer lr = polyGO.GetComponent<LineRenderer>();
+        LineRenderer lr = GetComponent<LineRenderer>();
         if (lr == null) return;        
         lr.positionCount = positions.Count;
         lr.SetPositions(positions.ConvertAll(x => (Vector3)x).ToArray());        
@@ -35,7 +29,7 @@ public class RandomPoly
 
     private void SetMesh (List<Vector2> positions)
     {
-        MeshFilter mf = polyGO.GetComponent<MeshFilter>();
+        MeshFilter mf = GetComponent<MeshFilter>();
         if (mf == null) return;
 
         mf.mesh = new Mesh();
@@ -48,7 +42,7 @@ public class RandomPoly
 
     private void SetCollider(List<Vector2> positions)
     {
-        PolygonCollider2D col = polyGO.GetComponent<PolygonCollider2D>();
+        PolygonCollider2D col = GetComponent<PolygonCollider2D>();
         if (col == null) return;
         col.points = positions.ToArray();
     }
@@ -87,5 +81,39 @@ public class RandomPoly
         }
 
         return positions;
+    }
+
+    private Vector2[] Smooth (Vector2[] positions)
+    {
+        if (smoothLevel <= 0) return positions;
+
+        Vector2[] smoothedPositions = positions;
+
+        for (int i = 0; i < smoothLevel; i++)
+        {
+            smoothedPositions = Subdivide(smoothedPositions);
+        }
+
+        return smoothedPositions;
+    }
+
+    private Vector2[] Subdivide(Vector2[] positions)
+    {
+        List<Vector2> newPositions = new List<Vector2>();
+        for (int i = 0, imax = positions.Length; i < imax; i++)
+        {
+            Vector2[] sub = DivideAngle(positions[i], positions[(i + 1) % imax], positions[(i + 2) % imax]);
+            newPositions.AddRange(sub);
+        }
+        return newPositions.ToArray();
+    }
+
+    private Vector2[] DivideAngle(Vector2 A, Vector2 B, Vector2 C)
+    {
+        Vector2[] output = new Vector2[2];
+        output[0] = A / 4f + 3f * B / 4f;
+        output[1] = 3f * B / 4f + C / 4f;
+
+        return output;
     }
 }

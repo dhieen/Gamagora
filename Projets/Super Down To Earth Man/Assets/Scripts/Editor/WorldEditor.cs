@@ -26,8 +26,10 @@ public class WorldEditor : EditorWindow
         if (blocPrefab != null && GUILayout.Button ("New Block"))
         {
             Object newBloc = Instantiate<Object>(blocPrefab);
-            RandomPoly poly = new RandomPoly(newBloc as GameObject, radiusParam, freqParam, angleParam);
-            poly.Randomize();
+            GameObject go = newBloc as GameObject;
+
+            RandomPoly rp = go.GetComponent<RandomPoly>();
+            if (rp != null) rp.Randomize();
         }
     }
 }

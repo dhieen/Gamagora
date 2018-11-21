@@ -316,8 +316,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 30}
+  m_AnchoredPosition: {x: 5, y: 0}
+  m_SizeDelta: {x: -10, y: 30}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &558532675
 MonoBehaviour:
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_BestFit: 0
     m_MinSize: 10
     m_MaxSize: 56
-    m_Alignment: 0
+    m_Alignment: 6
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
@@ -422,6 +422,8 @@ MonoBehaviour:
       probability: 10
     - prefab: {fileID: 1952613778774706, guid: cbdc8e767fb93b7489a5eeade7ecfd74, type: 2}
       probability: 5
+    - prefab: {fileID: 1798640923115892, guid: 88a4946b93c5bf148aef5b336e9e9703, type: 2}
+      probability: 8
   radiusParam: 70
   angleParam: 40
   freqParam: 3
@@ -1034,13 +1036,14 @@ MonoBehaviour:
   speed: -40
   torque: -160
   jumpSpeed: {x: -20, y: 50}
-  hurtJumpSpeed: {x: -50, y: 100}
+  feet: {fileID: 1865990708}
   toleranceAngle: 40
-  fallRoll: 500
+  fallRoll: 5500
   fallRollControl: -100
   controlledAngularDrag: 10
   fallingAngularDrag: 1
-  feet: {fileID: 1865990708}
+  hurtJumpSpeed: {x: -50, y: 100}
+  tumbleDuration: 1
   anim: {fileID: 912470920}
   jumpParameter: jumping
   fallParameter: falling

@@ -64,12 +64,12 @@ public class BlocSpawner : MonoBehaviour
 
     private GameObject SpawnBlocOn (GameObject prefab, Vector2 position)
     {
-        Object newBloc = Instantiate<Object>(prefab, position, Quaternion.identity);
-        RandomPoly poly = new RandomPoly(newBloc as GameObject, radiusParam, freqParam, angleParam);
-        poly.Randomize();
-
+        Object newBloc = Instantiate<Object>(prefab, position, Quaternion.identity);      
         GameObject go = newBloc as GameObject;
 
-        return go as GameObject;
+        RandomPoly rp = go.GetComponent<RandomPoly>();
+        if (rp != null) rp.Randomize();
+
+        return go;
     }
 }

@@ -5,17 +5,21 @@ using UnityEngine.Events;
 
 public class HeroMovements : MonoBehaviour
 {
+    [Header("Basic moves")]
     public string groundTag = "Ground";
     public float speed;
     public float torque;
     public Vector2 jumpSpeed;
-    public Vector2 hurtJumpSpeed;
+
+    [Header("Tumble")]
+    public Trigger2DHelper feet;
     public float toleranceAngle;
     public float fallRoll;
     public float fallRollControl;
     public float controlledAngularDrag;
     public float fallingAngularDrag;
-    public Trigger2DHelper feet;
+    public Vector2 hurtJumpSpeed;
+    public float tumbleDuration;
 
     [Header("Animation")]
     public Animator anim;
@@ -35,14 +39,23 @@ public class HeroMovements : MonoBehaviour
 
     void Start()
     {
+        StartCoroutine(Init());
+    }
+
+    private IEnumerator Init()
+    {
         rb = GetComponent<Rigidbody2D>();
-        itemReact = GetComponentInChildren<ItemReaction>();
         actionOnHurt = new UnityAction<Vector3>(HurtJump);
+
+        itemReact = GetComponentInChildren<ItemReaction>();
+        yield return new WaitUntil(() => itemReact.Initialized);
         itemReact.getsHurt.AddListener(actionOnHurt);
     }
 
     private void OnCollisionStay2D(Collision2D collision)
     {
+        if (isFalling) return;
+
         Collider2D other = collision.collider;
 
         if (other.CompareTag(groundTag))
@@ -56,7 +69,6 @@ public class HeroMovements : MonoBehaviour
                 if (groundAngle < toleranceAngle)
                 {
                     isFalling = false;
-                    StopCoroutine("FallCoroutine");
                     rb.constraints = RigidbodyConstraints2D.FreezeRotation;
                     rb.angularDrag = controlledAngularDrag;
                     transform.rotation = Quaternion.LookRotation(Vector3.forward, contact.normal);
@@ -64,10 +76,7 @@ public class HeroMovements : MonoBehaviour
                 }
                 else
                 {
-                    isFalling = true;
-                    anim.SetBool(fallParameter, true);
-                    rb.angularDrag = fallingAngularDrag;
-                    rb.AddTorque(fallRoll);
+                    StartCoroutine(TumbleCoroutine());
                 }
             }
         }
@@ -75,6 +84,9 @@ public class HeroMovements : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isFalling) return;
+
+        isOnGround = feet.IsColliding;
         Vector2 localVelocity = Quaternion.Inverse(transform.rotation) * rb.velocity;
 
         if (isOnGround)
@@ -96,29 +108,43 @@ public class HeroMovements : MonoBehaviour
         else
         {
             isJumping = true;
-            if (controlDirection != 0f)
-            {
-                if (isFalling)
-                    rb.AddTorque(fallRollControl * controlDirection);
-                else
-                    rb.angularVelocity = torque * controlDirection;
-            }
-            anim.SetBool(jumpParameter, true);
+            if (controlDirection != 0f) rb.angularVelocity = torque * controlDirection;
+
+            if (!isFalling) anim.SetBool(jumpParameter, true);
         }
 
         rb.velocity = transform.rotation * localVelocity;
 
-        isOnGround = feet.IsColliding;
         rb.constraints = RigidbodyConstraints2D.None;
     }
 
     private void HurtJump(Vector3 hurtSource)
     {
-        rb.velocity = Quaternion.LookRotation(Vector3.forward, transform.position - hurtSource) * hurtJumpSpeed;
+        rb.velocity = Quaternion.LookRotation(Vector3.forward, transform.position - hurtSource) * hurtJumpSpeed;        
 
-        isJumping = true;
-        isFalling = true;
+        StartCoroutine(TumbleCoroutine());
+    }
+
+
+    private IEnumerator TumbleCoroutine()
+    {
         anim.SetBool(jumpParameter, false);
         anim.SetBool(fallParameter, true);
+
+        rb.angularDrag = fallingAngularDrag;
+        rb.constraints = RigidbodyConstraints2D.None;
+        rb.AddTorque(fallRoll);
+
+        if (isFalling) yield return null;
+        isFalling = true;        
+
+        float startTime = Time.time;
+        while (Time.time < startTime + tumbleDuration)
+        {
+            rb.AddTorque(fallRollControl * controlDirection);
+            yield return new WaitForFixedUpdate();
+        }
+
+        isFalling = false;
     }
 }
