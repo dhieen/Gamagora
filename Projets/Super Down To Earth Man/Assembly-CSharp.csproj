@@ -61,20 +61,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\BlocSpawner.cs" />
-    <Compile Include="Assets\Scripts\ChaikinLine.cs" />
-    <Compile Include="Assets\Scripts\Coin.cs" />
     <Compile Include="Assets\Scripts\Hero\AlignWithGround.cs" />
     <Compile Include="Assets\Scripts\Hero\ControlMovements.cs" />
     <Compile Include="Assets\Scripts\Hero\HeroControls.cs" />
     <Compile Include="Assets\Scripts\Hero\HeroMovements.cs" />
-    <Compile Include="Assets\Scripts\Hero\ItemPicker.cs" />
+    <Compile Include="Assets\Scripts\Hero\ItemReaction.cs" />
     <Compile Include="Assets\Scripts\Hero\LocalGravity.cs" />
     <Compile Include="Assets\Scripts\Imported\Triangulator.cs" />
-    <Compile Include="Assets\Scripts\LinkPoints.cs" />
-    <Compile Include="Assets\Scripts\RandomPoly.cs" />
-    <Compile Include="Assets\Scripts\Rotate.cs" />
-    <Compile Include="Assets\Scripts\Trigger2DHelper.cs" />
+    <Compile Include="Assets\Scripts\Items\Coin.cs" />
+    <Compile Include="Assets\Scripts\Items\HurtOnContact.cs" />
+    <Compile Include="Assets\Scripts\Items\ItemSpawner.cs" />
+    <Compile Include="Assets\Scripts\Items\SpawnableItem.cs" />
+    <Compile Include="Assets\Scripts\Terrain\BlocSpawner.cs" />
+    <Compile Include="Assets\Scripts\Terrain\ChaikinLine.cs" />
+    <Compile Include="Assets\Scripts\Terrain\LinkPoints.cs" />
+    <Compile Include="Assets\Scripts\Terrain\RandomPoly.cs" />
+    <Compile Include="Assets\Scripts\UI\ScoreGUI.cs" />
+    <Compile Include="Assets\Scripts\Utility\Rotate.cs" />
+    <Compile Include="Assets\Scripts\Utility\Trigger2DHelper.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>C:/Users/anteo/DevLand/Repos/Projets/Super Down To Earth Man/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>

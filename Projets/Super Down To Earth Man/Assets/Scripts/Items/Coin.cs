@@ -8,17 +8,17 @@ public class Coin : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        ItemPicker picker = collision.GetComponent<ItemPicker>();
+        ItemReaction picker = collision.GetComponent<ItemReaction>();
 
         if (picker != null)
         {
+            picker.GetPoints(points);
             GetPicked();
         }
     }
 
     private void GetPicked ()
     {
-        Debug.Log("GetPicked");
         GameObject.Destroy(this.gameObject);
     }
 }

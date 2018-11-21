@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class HeroMovements : MonoBehaviour
 {
@@ -8,11 +9,13 @@ public class HeroMovements : MonoBehaviour
     public float speed;
     public float torque;
     public Vector2 jumpSpeed;
+    public Vector2 hurtJumpSpeed;
     public float toleranceAngle;
     public float fallRoll;
     public float fallRollControl;
     public float controlledAngularDrag;
     public float fallingAngularDrag;
+    public Trigger2DHelper feet;
 
     [Header("Animation")]
     public Animator anim;
@@ -22,14 +25,20 @@ public class HeroMovements : MonoBehaviour
     [HideInInspector] public float controlDirection;
 
     private Rigidbody2D rb;
+    private ItemReaction itemReact;
 
     private bool isOnGround;
     private bool isJumping;
     private bool isFalling;
 
+    private UnityAction<Vector3> actionOnHurt;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        itemReact = GetComponentInChildren<ItemReaction>();
+        actionOnHurt = new UnityAction<Vector3>(HurtJump);
+        itemReact.getsHurt.AddListener(actionOnHurt);
     }
 
     private void OnCollisionStay2D(Collision2D collision)
@@ -38,8 +47,6 @@ public class HeroMovements : MonoBehaviour
 
         if (other.CompareTag(groundTag))
         {
-            isOnGround = true;
-
             foreach (ContactPoint2D contact in collision.contacts)
             {
                 Vector2 localTowardGround = Quaternion.Inverse(transform.rotation) * (contact.point - (Vector2)transform.position);
@@ -101,7 +108,17 @@ public class HeroMovements : MonoBehaviour
 
         rb.velocity = transform.rotation * localVelocity;
 
-        isOnGround = false;
+        isOnGround = feet.IsColliding;
         rb.constraints = RigidbodyConstraints2D.None;
+    }
+
+    private void HurtJump(Vector3 hurtSource)
+    {
+        rb.velocity = Quaternion.LookRotation(Vector3.forward, transform.position - hurtSource) * hurtJumpSpeed;
+
+        isJumping = true;
+        isFalling = true;
+        anim.SetBool(jumpParameter, false);
+        anim.SetBool(fallParameter, true);
     }
 }
