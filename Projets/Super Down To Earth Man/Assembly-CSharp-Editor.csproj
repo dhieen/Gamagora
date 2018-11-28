@@ -54,9 +54,8 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\Terrain\Editor\RandomPolyInspector.cs" />
-     <Compile Include="Assets\Scripts\Terrain\Editor\RandomTunnelInspector.cs" />
+     <Compile Include="Assets\Scripts\Terrain\Editor\TunnelInspector.cs" />
      <Compile Include="Assets\Scripts\Terrain\Editor\WorldEditor.cs" />
-     <Compile Include="Assets\Scripts\Terrain\Editor\WorldGeneratorInspector.cs" />
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>C:/Users/anthenry/source/repos/Projets/Super Down To Earth Man/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
  </Reference>

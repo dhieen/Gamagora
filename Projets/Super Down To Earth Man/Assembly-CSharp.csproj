@@ -69,10 +69,8 @@
      <Compile Include="Assets\Scripts\Terrain\ChaikinLine.cs" />
      <Compile Include="Assets\Scripts\Terrain\LinkPoints.cs" />
      <Compile Include="Assets\Scripts\Terrain\RandomPoly.cs" />
-     <Compile Include="Assets\Scripts\Terrain\RandomTunnel.cs" />
-     <Compile Include="Assets\Scripts\Terrain\TunnelCell.cs" />
-     <Compile Include="Assets\Scripts\Terrain\WordlGenerator.cs" />
-     <Compile Include="Assets\Scripts\Terrain\WorldCell.cs" />
+     <Compile Include="Assets\Scripts\Terrain\RandomTunnelGenerator.cs" />
+     <Compile Include="Assets\Scripts\Terrain\Tunnel.cs" />
      <Compile Include="Assets\Scripts\UI\ScoreGUI.cs" />
      <Compile Include="Assets\Scripts\Utility\Geometry.cs" />
      <Compile Include="Assets\Scripts\Utility\Rotate.cs" />
