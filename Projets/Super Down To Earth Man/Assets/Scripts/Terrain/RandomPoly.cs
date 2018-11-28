@@ -7,7 +7,6 @@ public class RandomPoly : MonoBehaviour
     public float radius;
     public float verticesPerUnit;
     public float randomRange;
-    [Range(0, 5)]
     public int smoothLevel;
 
 	public void Randomize ()
