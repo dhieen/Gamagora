@@ -19,12 +19,12 @@ public class Tunnel : MonoBehaviour
 
     public Geometry2D.Line GetCeilingLine ()
     {
-        return new Geometry2D.Line(GetEnd(1) + GetNormal() * width / 2f, segment.normalized);
+        return new Geometry2D.Line((Vector2)transform.position + GetNormal() * width / 2f, segment.normalized);
     }
 
     public Geometry2D.Line GetFloorLine()
     {
-        return new Geometry2D.Line(GetEnd(1) - GetNormal() * width / 2f, segment.normalized);
+        return new Geometry2D.Line((Vector2)transform.position - GetNormal() * width / 2f, segment.normalized);
     }
 
     public static Vector3[] Intersections (Tunnel A, Tunnel B, out bool noIntersections, bool swapFloorAndCeiling = false)
@@ -51,10 +51,9 @@ public class Tunnel : MonoBehaviour
         return intersections;
     }
 
-    public Vector2 GetEnd(int i)
+    public Vector2 GetEnd(bool other)
     {
-        LineRenderer[] lr = GetComponentsInChildren<LineRenderer>();
-        return transform.position + (lr[0].GetPosition(i) + lr[1].GetPosition(i)) / 2f;
+        return other ? (Vector2)transform.position : (Vector2)transform.position + segment;
     }
 
     public void RefreshGameObject()
@@ -80,22 +79,38 @@ public class Tunnel : MonoBehaviour
 
     public void LinkTo (ref Tunnel other, bool connectionOrder)
     {
-        int thisEndIndex = connectionOrder ? 1 : 0;
-        int otherEndIndex = connectionOrder ? 0 : 1;
+        int thisEndIndex = connectionOrder ? ceiling.Count-1 : 0;
+        int otherEndIndex = connectionOrder ? 0 : other.ceiling.Count-1;
 
-        Vector2 connectionPoint = other.GetEnd(otherEndIndex);
+        Vector2 connectionPoint = other.GetEnd(connectionOrder);
         transform.position = connectionOrder ? connectionPoint - segment : connectionPoint;
 
         bool noIntersections;
         Vector3[] intersections = Intersections(this, other, out noIntersections);
-        Debug.Assert(noIntersections == false);
+        
+        if (noIntersections == false)
+        {
+            ceiling[thisEndIndex] = intersections[0] - transform.position;
+            floor[thisEndIndex] = intersections[1] - transform.position;
 
-        ceiling[thisEndIndex] = intersections[0] - transform.position;
-        floor[thisEndIndex] = intersections[1] - transform.position;
+            other.ceiling[otherEndIndex] = intersections[0] - other.transform.position;
+            other.floor[otherEndIndex] = intersections[1] - other.transform.position;
+        }
+        else
+        {
+            if (thisEndIndex == 0)
+            {
+                ceiling.Insert(0, other.ceiling[otherEndIndex] + (Vector2)other.transform.position - (Vector2)transform.position);
+                floor.Insert(0,other.floor[otherEndIndex] + (Vector2)other.transform.position - (Vector2)transform.position);
+            }
+            else
+            {
+                ceiling.Add(other.ceiling[otherEndIndex] + (Vector2)other.transform.position - (Vector2)transform.position);
+                floor.Add(other.floor[otherEndIndex] + (Vector2)other.transform.position - (Vector2)transform.position);
+            }
+        }
+
         RefreshGameObject();
-
-        other.ceiling[otherEndIndex] = intersections[0] - other.transform.position;
-        other.floor[otherEndIndex] = intersections[1] - other.transform.position;
         other.RefreshGameObject();
 
         if (connectionOrder)
@@ -113,18 +128,18 @@ public class Tunnel : MonoBehaviour
     private void SetLines()
     {
         LineRenderer[] lr = GetComponentsInChildren<LineRenderer>();
-        if (lr == null || lr.Length != 2) return;
+        if (lr == null) return;
 
-        lr[0].positionCount = 2;
+        lr[0].positionCount = ceiling.Count;
         lr[0].SetPositions(ceiling.ConvertAll (x => (Vector3)x).ToArray());
-        lr[1].positionCount = 2;
+        lr[1].positionCount = ceiling.Count;
         lr[1].SetPositions(floor.ConvertAll(x => (Vector3)x).ToArray());
     }
 
     private void SetColliders()
     {
         EdgeCollider2D[] col = GetComponentsInChildren<EdgeCollider2D>();
-        if (col == null || col.Length != 2) return;
+        if (col == null) return;
 
         col[0].points = ceiling.ToArray();
         col[1].points = floor.ToArray();
@@ -135,9 +150,15 @@ public class Tunnel : MonoBehaviour
         MeshFilter mf = GetComponentInChildren<MeshFilter>();
         if (mf == null) return;
 
-        List<Vector2> quad = new List<Vector2>(new Vector2[4]
+        List<Vector2> quad = ceiling.Count <= 2 ?
+            new List<Vector2>(new Vector2[4]
             {
                 ceiling[0], ceiling[1], floor[1], floor[0]
+            })
+            :
+            new List<Vector2>(new Vector2[4]
+            {
+                ceiling[1], ceiling[2], floor[2], floor[1]
             });
 
         mf.mesh = new Mesh();
@@ -153,9 +174,15 @@ public class Tunnel : MonoBehaviour
         PolygonCollider2D col = GetComponent<PolygonCollider2D>();
         if (col == null) return;
 
-        col.points = new Vector2[4]
+        col.points = ceiling.Count <= 2 ?
+            new Vector2[4]
             {
                 ceiling[0], ceiling[1], floor[1], floor[0]
+            }
+            :
+            new Vector2[4]
+            {
+                ceiling[1], ceiling[2], floor[2], floor[1]
             };
     }
 }

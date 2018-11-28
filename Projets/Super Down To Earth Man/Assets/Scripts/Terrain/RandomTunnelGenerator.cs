@@ -27,8 +27,7 @@ public class RandomTunnelGenerator : MonoBehaviour
             tunnelCount++;
             newTunnel.name = "Tunnel " + tunnelCount;
             newTunnel.transform.position += tunnelCount* Vector3.forward;
-        }
-        
+        }        
         /*
         if (tunnel.connections1.Count == 0)
         {
