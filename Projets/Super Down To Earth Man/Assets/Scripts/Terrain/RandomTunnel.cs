@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using UnityEngine
 
 public class RandomTunnel : MonoBehaviour
 {
     public Vector2 segment;
     public float width;
+    public List<RandomTunnel> connections0;
+    public List<RandomTunnel> connections1;
+    
 
     public Vector2 GetNormal()
     {
@@ -33,8 +36,8 @@ public class RandomTunnel : MonoBehaviour
         }
         else
         {
-            intersections[1] = Geometry2D.Line.Intersection(A.GetCeilingLine(), B.GetFloorLine());
-            intersections[0] = Geometry2D.Line.Intersection(A.GetFloorLine(), B.GetCeilingLine());
+            intersections[0] = Geometry2D.Line.Intersection(A.GetCeilingLine(), B.GetFloorLine());
+            intersections[1] = Geometry2D.Line.Intersection(A.GetFloorLine(), B.GetCeilingLine());
         }
 
         return intersections;
@@ -52,38 +55,48 @@ public class RandomTunnel : MonoBehaviour
         SetColliders(segment, width);
     }
 
-    public void LinkTo (ref RandomTunnel other)
+    public void LinkTo (ref RandomTunnel other, bool connectionOrder)
     {
-        bool sameWay = (Vector2.Dot(segment, other.segment) > 0f);
-        int otherEndIndex = sameWay ? 1 : 0;
-        Vector2 connectionPoint = other.GetEnd(otherEndIndex);
+        int thisEndIndex = connectionOrder ? 1 : 0;
+        int otherEndIndex = connectionOrder ? 0 : 1;
 
-        transform.position = connectionPoint;
-        Vector3[] intersections = Intersections(this, other, !sameWay);
+        Vector2 connectionPoint = other.GetEnd(otherEndIndex);
+        transform.position = connectionOrder ? connectionPoint - segment : connectionPoint;
+
+        Vector3[] intersections = Intersections(this, other);
 
         LineRenderer[] lr = GetComponentsInChildren<LineRenderer>();
-        lr[sameWay ? 0 : 1].SetPosition (0, intersections[0] - transform.position);
-        lr[sameWay ? 1 : 0].SetPosition(0, intersections[1] - transform.position);
+        lr[0].SetPosition (thisEndIndex, intersections[0] - transform.position);
+        lr[1].SetPosition (thisEndIndex, intersections[1] - transform.position);
 
         lr = other.GetComponentsInChildren<LineRenderer>();
         lr[0].SetPosition(otherEndIndex, intersections[0] - other.transform.position);
         lr[1].SetPosition(otherEndIndex, intersections[1] - other.transform.position);
 
         EdgeCollider2D[] col = GetComponentsInChildren<EdgeCollider2D>();
-        col[sameWay ? 0 : 1].points = new Vector2[] { (Vector2)(intersections[0] - transform.position), col[sameWay ? 0 : 1].points[1] };
-        col[sameWay ? 1 : 0].points = new Vector2[] { (Vector2)(intersections[1] - transform.position), col[sameWay ? 1 : 0].points[1] };
-
-        col = other.GetComponentsInChildren<EdgeCollider2D>();
         col[0].points = new Vector2[]
         {
-            sameWay ? col[0].points[0] : (Vector2)(intersections[0] - other.transform.position),
-            sameWay ? (Vector2)(intersections[0] - other.transform.position) : col[0].points[1]
+            connectionOrder ? col[0].points[0] : (Vector2)(intersections[0] - transform.position),
+            connectionOrder ? (Vector2)(intersections[0] - transform.position) : col[0].points[1]
         };
 
         col[1].points = new Vector2[]
         {
-            sameWay ? col[1].points[0] : (Vector2)(intersections[1] - other.transform.position),
-            sameWay ? (Vector2)(intersections[1] - other.transform.position) : col[1].points[1]
+            connectionOrder ? col[1].points[0] : (Vector2)(intersections[1] - transform.position),
+            connectionOrder ? (Vector2)(intersections[1] - transform.position) : col[1].points[1]
+        };
+
+        col = other.GetComponentsInChildren<EdgeCollider2D>();
+        col[0].points = new Vector2[]
+        {
+            !connectionOrder ? col[0].points[0] : (Vector2)(intersections[0] - other.transform.position),
+            !connectionOrder ? (Vector2)(intersections[0] - other.transform.position) : col[0].points[1]
+        };
+
+        col[1].points = new Vector2[]
+        {
+            !connectionOrder ? col[1].points[0] : (Vector2)(intersections[1] - other.transform.position),
+            !connectionOrder ? (Vector2)(intersections[1] - other.transform.position) : col[1].points[1]
         };
 
     }
@@ -108,6 +121,26 @@ public class RandomTunnel : MonoBehaviour
             -normal * width/2f,
             segment - normal * width/2f
         });
+    }
+
+    private void SetLines (Vector3[] floor, Vector3[] ceiling, bool worldPositions)
+    {
+        List<Vector3> correctFoor = new List<Vector3> ();
+        List<Vector3> correctCeiling = new List<Vector3>();
+
+        if (worldPositions)
+        {
+            for (int i = 0; i < floor.Length; i++) correctFoor.Add (floor[i] - transform.position);
+            for (int i = 0; i < ceiling.Length; i++) correctCeiling.Add(ceiling[i] - transform.position);
+        }
+
+        LineRenderer[] lr = GetComponentsInChildren<LineRenderer>();
+        lr[0].SetPositions(correctCeiling.ToArray());
+        lr[1].SetPositions(correctFoor.ToArray());
+
+        lr = other.GetComponentsInChildren<LineRenderer>();
+        lr[0].SetPosition(otherEndIndex, intersections[0] - other.transform.position);
+        lr[1].SetPosition(otherEndIndex, intersections[1] - other.transform.position);
     }
 	
     private void SetColliders(Vector2 segment, float width)
