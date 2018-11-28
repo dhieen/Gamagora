@@ -71,6 +71,7 @@
      <Compile Include="Assets\Scripts\Terrain\RandomPoly.cs" />
      <Compile Include="Assets\Scripts\Terrain\RandomTunnelGenerator.cs" />
      <Compile Include="Assets\Scripts\Terrain\Tunnel.cs" />
+     <Compile Include="Assets\Scripts\Terrain\TunnelCollisionActivator.cs" />
      <Compile Include="Assets\Scripts\UI\ScoreGUI.cs" />
      <Compile Include="Assets\Scripts\Utility\Geometry.cs" />
      <Compile Include="Assets\Scripts\Utility\Rotate.cs" />

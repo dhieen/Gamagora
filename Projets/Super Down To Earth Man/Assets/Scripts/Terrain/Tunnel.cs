@@ -47,6 +47,7 @@ public class Tunnel : MonoBehaviour
             if (noIntersections) return null;
         }
 
+        noIntersections = false;
         return intersections;
     }
 
@@ -97,10 +98,10 @@ public class Tunnel : MonoBehaviour
         other.floor[otherEndIndex] = intersections[1] - other.transform.position;
         other.RefreshGameObject();
 
-        if (connectionOrder == false)
+        if (connectionOrder)
         {
-            connections1.Add(other);
-            other.connections0.Add(this);
+            connections0.Add(other);
+            other.connections1.Add(this);
         }
         else
         {
