@@ -35,9 +35,6 @@ public struct PrefabPicker
 public class BlocSpawner : MonoBehaviour
 {
     public PrefabPicker prefabPicker;
-    public float radiusParam;
-    public float angleParam;
-    public float freqParam;
     public int spawnThreshold;
 
     private List<Trigger2DHelper> sensors;
@@ -68,7 +65,7 @@ public class BlocSpawner : MonoBehaviour
         GameObject go = newBloc as GameObject;
 
         RandomPoly rp = go.GetComponent<RandomPoly>();
-        if (rp != null) rp.Randomize();
+        if (rp != null) rp.Randomize(); 
 
         return go;
     }

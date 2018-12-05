@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class ItemSpawner : MonoBehaviour
 {
-    public SpawnableItem coinPrefab;
-    public SpawnableItem hazardPrefab;
+    public PrefabPicker groundPrefabs;
+    public PrefabPicker airPrefabs;
+    public float minSpace;
 
     public void SpawnAroundBloc (PolygonCollider2D bloc)
     {
         int pointCount = bloc.points.Length;
+        Vector2 lastSpawnPos = float.MaxValue * Vector2.one;
 
         for (int i= 0; i < pointCount; i++)
         {
@@ -25,16 +27,67 @@ public class ItemSpawner : MonoBehaviour
             else
                 medianOnB = -medianOnB.normalized;
 
-            SpawnItemOn(coinPrefab, ptB, medianOnB, bloc.transform);
-            if (Vector2.Distance (ptA, ptB) > hazardPrefab.requiredSpace.x
-                && Random.Range (0, 2) == 0)
-                SpawnItemOn(hazardPrefab, (ptA+ptB)/2f, normalOnAB, bloc.transform);
+            if (Vector2.Distance(lastSpawnPos, ptB) > minSpace)
+            {
+                GameObject prefab = airPrefabs.PickRandom();
+                if (prefab != null)
+                {
+                    SpawnItemOn(prefab, ptB, medianOnB, bloc.transform);
+                    lastSpawnPos = ptB;
+                }
+
+                if (Vector2.Distance(lastSpawnPos, (ptA + ptB) / 2f) > minSpace)
+                {
+                    prefab = groundPrefabs.PickRandom();
+                    if (prefab != null)
+                    {
+                        SpawnItemOn(prefab, (ptA + ptB) / 2f, normalOnAB, bloc.transform);
+                        lastSpawnPos = (ptA + ptB) / 2f;
+                    }
+                }
+            }
         }
     }
 
-    private void SpawnItemOn (SpawnableItem prefab, Vector2 position, Vector2 axis, Transform onParent)
+    public void SpawnAlongTunnel (Tunnel tunnel)
     {
-        SpawnableItem item = Instantiate<SpawnableItem>(prefab, onParent);
+        int numSpaces = Mathf.FloorToInt(tunnel.segment.magnitude / minSpace);
+        float step = tunnel.segment.magnitude / (float)numSpaces;
+
+        for (int t =1 ; t < numSpaces; t++)
+        {
+            GameObject prefab = airPrefabs.PickRandom();
+            if (prefab == null) continue;
+            Vector2 pos = step * t * tunnel.segment.normalized;
+            SpawnItemOn(prefab, pos, tunnel.GetNormal(), tunnel.transform);
+        }
+
+        Vector2[] seg = tunnel.GetCeilingSegment();
+        numSpaces = Mathf.FloorToInt((seg[1] - seg[0]).magnitude / minSpace);
+        step = (seg[1] - seg[0]).magnitude / (float)numSpaces;
+        for (int t = 1; t < numSpaces; t++)
+        {
+            GameObject prefab = groundPrefabs.PickRandom();
+            if (prefab == null) continue;
+            Vector2 pos = seg[0] + step * t * (seg[1] - seg[0]).normalized;
+            SpawnItemOn(prefab, pos, -tunnel.GetNormal(), tunnel.transform);
+        }
+
+        seg = tunnel.GetFloorSegment();
+        numSpaces = Mathf.FloorToInt((seg[1] - seg[0]).magnitude / minSpace);
+        step = (seg[1] - seg[0]).magnitude / (float)numSpaces;
+        for (int t = 1; t < numSpaces; t++)
+        {
+            GameObject prefab = groundPrefabs.PickRandom();
+            if (prefab == null) continue;
+            Vector2 pos = seg[0] + step * t * (seg[1] - seg[0]).normalized;
+            SpawnItemOn(prefab, pos, tunnel.GetNormal(), tunnel.transform);
+        }
+    }
+
+    private void SpawnItemOn (GameObject prefab, Vector2 position, Vector2 axis, Transform onParent)
+    {
+        GameObject item = Instantiate<GameObject>(prefab, onParent);
         item.transform.localPosition = position;
         item.transform.rotation = Quaternion.LookRotation(Vector3.forward, axis);
     }

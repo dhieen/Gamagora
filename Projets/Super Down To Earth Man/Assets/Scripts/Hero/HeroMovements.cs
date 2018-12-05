@@ -18,15 +18,21 @@ public class HeroMovements : MonoBehaviour
     public float fallRollControl;
     public float controlledAngularDrag;
     public float fallingAngularDrag;
-    public Vector2 hurtJumpSpeed;
     public float tumbleDuration;
 
+    [Header("Hurt")]
+    public Vector2 hurtJumpSpeed;
+    public float hurtSafeDuration;
+    public float hurtBlinkSpeed;
+
     [Header("Animation")]
+    public SpriteRenderer renderer;
     public Animator anim;
     public string jumpParameter;
     public string fallParameter;
 
     [HideInInspector] public float controlDirection;
+    [HideInInspector] public bool controlFlip;
 
     private Rigidbody2D rb;
     private ItemReaction itemReact;
@@ -84,6 +90,8 @@ public class HeroMovements : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (controlFlip) transform.Rotate(Vector3.up, 180f);
+
         if (IsFalling) return;
 
         IsOnGround = feet.IsColliding;
@@ -120,9 +128,10 @@ public class HeroMovements : MonoBehaviour
 
     private void HurtJump(Vector3 hurtSource, int damage)
     {
-        rb.velocity = Quaternion.LookRotation(Vector3.forward, transform.position - hurtSource) * hurtJumpSpeed;        
+        rb.velocity = Quaternion.LookRotation(Vector3.forward, transform.position - hurtSource) * hurtJumpSpeed;
 
         StartCoroutine(TumbleCoroutine());
+        StartCoroutine(HurtCoroutine());
     }
 
 
@@ -146,5 +155,31 @@ public class HeroMovements : MonoBehaviour
         }
 
         IsFalling = false;
+    }
+
+    private IEnumerator HurtCoroutine()
+    {
+        itemReact.gameObject.SetActive(false);
+
+        float currentTime = Time.time;
+        float startTime = Time.time;
+        float blinkTime = startTime;
+
+        while (currentTime < startTime + hurtSafeDuration)
+        {
+            if (currentTime > blinkTime + 2f / hurtBlinkSpeed)
+            {
+                renderer.color = new Color(0f, 0f, 0f, 0f);
+                blinkTime = currentTime;
+            }
+            else if (currentTime > blinkTime + 1f / hurtBlinkSpeed)
+                renderer.color = Color.white;
+
+            yield return new WaitForFixedUpdate();
+            currentTime = Time.time;
+        }
+
+        renderer.color = Color.white;
+        itemReact.gameObject.SetActive(true);
     }
 }

@@ -6,74 +6,52 @@ public class TunnelCollisionActivator : MonoBehaviour
 {
     public int activatedLayer;
     public int deactivatedLayer;
+    public float activatedZ;
+    public float deactivatedZ;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Tunnel tunnel = collision.GetComponent<Tunnel>();
-
-        if (tunnel != null)
+        if (tunnel == null) return;
+        
+        foreach (Tunnel t in tunnel.connections0)
         {
-            foreach (EdgeCollider2D e in new List<EdgeCollider2D> (tunnel.GetComponentsInChildren<EdgeCollider2D>()))
-                e.gameObject.layer = activatedLayer;
+            SetClose(t);
 
-            foreach (Tunnel t in tunnel.connections0)
-            {
-                Collider2D trigger = t.GetComponent<Collider2D>();
-                if (trigger != null) trigger.enabled = true;
+            foreach (Tunnel tt in t.connections0)
+                if (tt != tunnel)
+                    SetFar(tt);
 
-                foreach (Tunnel tt in t.connections0)
-                {
-                    if (tt != tunnel)
-                    {
-                        Collider2D ttrigger = tt.GetComponent<Collider2D>();
-                        if (trigger != null) ttrigger.enabled = false;
-                    }
-                }
+            foreach (Tunnel tt in t.connections1)
+                if (tt != tunnel)
+                    SetFar(tt);
+        }
 
-                foreach (Tunnel tt in t.connections1)
-                {
-                    if (tt != tunnel)
-                    {
-                        Collider2D ttrigger = tt.GetComponent<Collider2D>();
-                        if (trigger != null) ttrigger.enabled = false;
-                    }
-                }
-            }
+        foreach (Tunnel t in tunnel.connections1)
+        {
+            SetClose(t);
 
-            foreach (Tunnel t in tunnel.connections1)
-            {
-                Collider2D trigger = t.GetComponent<Collider2D>();
-                if (trigger != null) trigger.enabled = true;
+            foreach (Tunnel tt in t.connections0)
+                if (tt != tunnel)
+                    SetFar(tt);
 
-                foreach (Tunnel tt in t.connections0)
-                {
-                    if (tt != tunnel)
-                    {
-                        Collider2D ttrigger = tt.GetComponent<Collider2D>();
-                        if (trigger != null) ttrigger.enabled = false;
-                    }
-                }
-
-                foreach (Tunnel tt in t.connections1)
-                {
-                    if (tt != tunnel)
-                    {
-                        Collider2D ttrigger = tt.GetComponent<Collider2D>();
-                        if (trigger != null) ttrigger.enabled = false;
-                    }
-                }
-            }
+            foreach (Tunnel tt in t.connections1)
+                if (tt != tunnel)
+                    SetFar(tt);
         }
     }
 
-    private void OnTriggerExit2D(Collider2D collision)
+    private void SetClose(Tunnel t)
     {
-        Tunnel tunnel = collision.GetComponent<Tunnel>();
-
-        if (tunnel != null)
-        {
-            foreach (EdgeCollider2D e in new List<EdgeCollider2D> (tunnel.GetComponentsInChildren<EdgeCollider2D>()))
-                e.gameObject.layer = deactivatedLayer;
-        }
+        t.SetCollisionsLayer(activatedLayer);
+        t.SetItemsActive(true);
+        t.SetVisualLayer(activatedZ);
+    }
+    
+    private void SetFar (Tunnel t)
+    {
+        t.SetCollisionsLayer(deactivatedLayer);
+        t.SetItemsActive(false);
+        t.SetVisualLayer(deactivatedZ);
     }
 }

@@ -9,6 +9,11 @@ public class RandomPoly : MonoBehaviour
     public float randomRange;
     public int smoothLevel;
 
+    public void Set (float r, float f, float a, int s)
+    {
+        radius = r; verticesPerUnit = f; randomRange = a; smoothLevel = s;
+    }
+
 	public void Randomize ()
     {
         List<Vector2> randomPositions = RandomPositions();

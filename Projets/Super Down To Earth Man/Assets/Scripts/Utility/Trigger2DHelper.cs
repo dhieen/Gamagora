@@ -19,13 +19,13 @@ public class Trigger2DHelper : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (onlyWithTags.Count > 0 && onlyWithTags.Contains(collision.tag))
+        if (onlyWithTags.Count == 0 || onlyWithTags.Contains(collision.tag))
             collisions.Add(collision);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (onlyWithTags.Count > 0 && onlyWithTags.Contains(collision.tag))
+        if (onlyWithTags.Count == 0 || onlyWithTags.Contains(collision.tag))
             collisions.Remove(collision);
     }
 }

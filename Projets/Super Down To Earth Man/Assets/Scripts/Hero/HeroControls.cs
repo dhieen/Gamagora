@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class HeroControls : MonoBehaviour
 {
     public HeroMovements hero;
-    public string controlAxisName = "Horizontal";    
+    public string controlAxisName = "Horizontal";
 
     private void FixedUpdate()
     {

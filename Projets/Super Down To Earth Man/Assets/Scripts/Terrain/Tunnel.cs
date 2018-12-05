@@ -27,6 +27,26 @@ public class Tunnel : MonoBehaviour
         return new Geometry2D.Line((Vector2)transform.position - GetNormal() * width / 2f, segment.normalized);
     }
 
+    public Vector2[] GetCeilingSegment()
+    {
+        if (ceiling.Count == 2) return ceiling.ToArray();
+
+        if (Vector2.Angle (ceiling[1] - ceiling[0], segment) < 1f)
+            return new Vector2[2] { ceiling[0], ceiling[1] };
+        else
+            return new Vector2[2] { ceiling[1], ceiling[2] };
+    }
+
+    public Vector2[] GetFloorSegment()
+    {
+        if (floor.Count == 2) return floor.ToArray();
+
+        if (Vector2.Angle(floor[1] - floor[0], segment) < 1f)
+            return new Vector2[2] { floor[0], floor[1] };
+        else
+            return new Vector2[2] { floor[1], floor[2] };
+    }
+
     public static Vector3[] Intersections (Tunnel A, Tunnel B, out bool noIntersections, bool swapFloorAndCeiling = false)
     {
         Vector3[] intersections = new Vector3[2];
@@ -83,7 +103,8 @@ public class Tunnel : MonoBehaviour
         int otherEndIndex = connectionOrder ? 0 : other.ceiling.Count-1;
 
         Vector2 connectionPoint = other.GetEnd(connectionOrder);
-        transform.position = connectionOrder ? connectionPoint - segment : connectionPoint;
+        Vector2 position2D = connectionOrder ? connectionPoint - segment : connectionPoint;
+        transform.position = new Vector3(position2D.x, position2D.y, transform.position.z);
 
         bool noIntersections;
         Vector3[] intersections = Intersections(this, other, out noIntersections);
@@ -147,26 +168,22 @@ public class Tunnel : MonoBehaviour
 
     private void SetMesh()
     {
-        MeshFilter mf = GetComponentInChildren<MeshFilter>();
-        if (mf == null) return;
+        List<MeshFilter> meshes = new List<MeshFilter> (GetComponentsInChildren<MeshFilter>());
+        if (meshes == null || meshes.Count == 0) return;
 
-        List<Vector2> quad = ceiling.Count <= 2 ?
-            new List<Vector2>(new Vector2[4]
-            {
-                ceiling[0], ceiling[1], floor[1], floor[0]
-            })
-            :
-            new List<Vector2>(new Vector2[4]
-            {
-                ceiling[1], ceiling[2], floor[2], floor[1]
-            });
+        List<Vector2> vertices = new List<Vector2>();
+        for (int i = 0; i < ceiling.Count; i++) vertices.Add(ceiling[i]);
+        for (int i = 0; i < floor.Count; i++) vertices.Add(floor[floor.Count - 1 - i]);
 
-        mf.mesh = new Mesh();
-        mf.sharedMesh.vertices = quad.ConvertAll (x => (Vector3)x).ToArray();
-        Triangulator tr = new Triangulator(quad.ToArray());
-        mf.sharedMesh.triangles = tr.Triangulate();
-        mf.sharedMesh.RecalculateNormals();
-        mf.sharedMesh.SetUVs(0, quad);
+        foreach (MeshFilter mf in meshes)
+        {
+            mf.mesh = new Mesh();
+            mf.sharedMesh.vertices = vertices.ConvertAll(x => (Vector3)x).ToArray();
+            Triangulator tr = new Triangulator(vertices.ToArray());
+            mf.sharedMesh.triangles = tr.Triangulate();
+            mf.sharedMesh.RecalculateNormals();
+            mf.sharedMesh.SetUVs(0, vertices);
+        }
     }
 
     private void SetTrigger()
@@ -174,15 +191,31 @@ public class Tunnel : MonoBehaviour
         PolygonCollider2D col = GetComponent<PolygonCollider2D>();
         if (col == null) return;
 
-        col.points = ceiling.Count <= 2 ?
-            new Vector2[4]
-            {
-                ceiling[0], ceiling[1], floor[1], floor[0]
-            }
-            :
-            new Vector2[4]
-            {
-                ceiling[1], ceiling[2], floor[2], floor[1]
-            };
+        List<Vector2> vertices = new List<Vector2>();
+        for (int i = 0; i < ceiling.Count; i++) vertices.Add(ceiling[i]);
+        for (int i = 0; i < floor.Count; i++) vertices.Add(floor[floor.Count - 1 - i]);
+
+        col.points = vertices.ToArray();
+    }
+
+    public void SetCollisionsLayer (int layer)
+    {
+        gameObject.layer = layer;
+
+        foreach (EdgeCollider2D c in new List<EdgeCollider2D>(GetComponentsInChildren<EdgeCollider2D>()))
+            c.gameObject.layer = layer;
+    }
+
+    public void SetItemsActive (bool active)
+    {
+        foreach (ItemActivator item in new List<ItemActivator>(GetComponentsInChildren<ItemActivator>()))
+        {
+            item.SetInteractionActive(active);
+        }
+    }
+
+    public void SetVisualLayer (float z)
+    {        
+        transform.position = new Vector3 (transform.position.x, transform.position.y, z);
     }
 }
