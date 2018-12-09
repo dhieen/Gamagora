@@ -6,7 +6,6 @@ public class StalkCamera : MonoBehaviour
 {
     public Transform target;
     public float distance;
-    public float height;
     public float moveForce;
 
     private Rigidbody rb;
